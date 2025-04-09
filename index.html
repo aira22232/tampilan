@@ -74,6 +74,22 @@
         #hide-btn:hover {
             background: rgba(255, 255, 255, 0.1);
         }
+        #skip-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 10;
+        }
+        #skip-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -84,6 +100,7 @@
         </a>
         <button id="hide-btn">Hide</button>
     </div>
+    <button id="skip-btn">Skip</button>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
@@ -103,6 +120,7 @@
         let particleCount = 20000;
         let params;
         let clock = new THREE.Clock();
+        let skipped = false;
 
         // Initialize the scene and start the animation loop.
         init();
@@ -148,7 +166,7 @@
             const card = document.getElementById('card');
             const hideBtn = document.getElementById('hide-btn');
             hideBtn.addEventListener('click', (event) => {
-                event.stopPropagation(); // Prevent body click from triggering immediately
+                event.stopPropagation();
                 card.style.display = 'none';
             });
             document.body.addEventListener('click', (event) => {
@@ -158,6 +176,17 @@
                         card.classList.add('show');
                     }, 10);
                 }
+            });
+
+            // Add skip functionality
+            const skipBtn = document.getElementById('skip-btn');
+            skipBtn.addEventListener('click', () => {
+                skipped = true;
+                clock.startTime -= 15; // Adjust elapsed time to skip to 15 seconds
+                if (!galaxySystem) createGalaxyCluster();
+                if (!nebula) createNebula();
+                showCard();
+                skipBtn.style.display = 'none'; // Hide skip button after click
             });
         }
 
@@ -247,10 +276,12 @@
             updateParticles(delta);
 
             let elapsed = clock.getElapsedTime();
-            if (elapsed > 10 && !galaxySystem) createGalaxyCluster();
-            if (elapsed > 15 && !nebula) {
-                createNebula();
-                showCard();
+            if (!skipped) {
+                if (elapsed > 10 && !galaxySystem) createGalaxyCluster();
+                if (elapsed > 15 && !nebula) {
+                    createNebula();
+                    showCard();
+                }
             }
 
             controls.update();
